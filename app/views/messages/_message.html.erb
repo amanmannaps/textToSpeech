@@ -1,0 +1,8 @@
+<div class="well">
+	[<%= message.created_at.strftime("%I:%M %p") %>] <%= message.user.username %>:
+	<%= message.body %>
+</div>
+
+<% if message.audio.present? %>
+  <audio controls src="<%= message.audio_url %>"></audio>
+<% end %>
