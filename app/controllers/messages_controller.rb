@@ -10,8 +10,8 @@ class MessagesController < ApplicationController
 
     polly = Aws::Polly::Client.new(
     region: 'ap-south-1',
-    access_key_id: 'AKIAZKM2O7PAYBG2LHUZ',
-    secret_access_key: 'tmd0wDqr/Gg+9NkudWvKQyM+n2TP+BC02yBKHNPp'
+    access_key_id: 'YourAccessId',
+    secret_access_key: 'YourAccessKey'
     )
 
     response = polly.synthesize_speech(
