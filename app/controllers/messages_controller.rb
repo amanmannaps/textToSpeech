@@ -1,6 +1,7 @@
 class MessagesController < ApplicationController
   before_action :authenticate_user!
-
+  $audio_queue_size= 0
+  @@LastSetTime= Time.now.to_i
  def create
     @message = Message.new(message_params)
     @message.user = current_user
@@ -10,8 +11,8 @@ class MessagesController < ApplicationController
 
     polly = Aws::Polly::Client.new(
     region: 'ap-south-1',
-    access_key_id: 'YourAccessId',
-    secret_access_key: 'YourAccessKey'
+    access_key_id: 'AKIAZKM2O7PAYBG2LHUZ',
+    secret_access_key: 'tmd0wDqr/Gg+9NkudWvKQyM+n2TP+BC02yBKHNPp'
     )
 
     response = polly.synthesize_speech(
@@ -21,17 +22,23 @@ class MessagesController < ApplicationController
     )
 
     audio_data = Base64.strict_encode64(response.audio_stream.read)
-
-    AudioPlayJob.perform_later(audio_data)
-
     
+    if $audio_queue_size==0
+      @@LastSetTime= Time.now.to_i
+    else
+      @@LastSetTime += 10
+    end
+    
+    AudioPlayJob.set(wait_until: (@@LastSetTime-Time.now.to_i).seconds.from_now).perform_later(audio_data)
+    $audio_queue_size+=1
+    RemoveAudioSizeJob.set(wait_until: (@@LastSetTime+10-Time.now.to_i).seconds.from_now).perform_later();
+
   end
 
 
   private
-  def message_params
-    params.require(:message).permit(:body, :audio)
-  end
-
+    def message_params
+      params.require(:message).permit(:body, :audio)
+    end
 
 end
